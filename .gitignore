@@ -1,3 +1,9 @@
 build
 node_modules
 .npmrc
+.env
+.env.*
+
+# APY-8 Fix: Correctly block generated crash artifacts and runtime temps
+*.tmp
+result.tmp
