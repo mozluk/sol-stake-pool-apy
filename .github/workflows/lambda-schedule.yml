@@ -1,6 +1,13 @@
 name: Update DB
 
-permissions: write-all
+# APY-7 Fix: Least privilege principle applied. Restrict GITHUB_TOKEN to only required rights.
+permissions:
+  contents: write
+
+# APY-7 Fix: Added a non-canceling concurrency group
+concurrency:
+  group: update-db
+  cancel-in-progress: false
 
 on:
   schedule:
@@ -9,18 +16,21 @@ jobs:
   build:
     name: Trigger Lambda Run
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
+    # APY-7 Fix: Migrated all workflow usages to v4 actions
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
-        node-version: 16
+        node-version: 20
 
-    - uses: pnpm/action-setup@v4
+    # APY-7 Fix: Pin external setup action to an exact immutable commit SHA
+    - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
       name: Install pnpm
       id: pnpm-install
       with:
@@ -31,9 +41,9 @@ jobs:
       id: pnpm-cache
       shell: bash
       run: |
-        echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+        echo "STORE_PATH=$(pnpm store path)" >> "$GITHUB_OUTPUT"
 
-    - uses: actions/cache@v3
+    - uses: actions/cache@v4
       name: Setup pnpm cache
       with:
         path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
@@ -60,4 +70,11 @@ jobs:
         git config --global user.name 'Lambda - Automatic Price Updator'
         git config --global user.email 'lambda@noreply.glitchful.dev'
         git add db
-        ! [ -z "$(git status --porcelain)" ] && git commit -m "automated price update" && git push || echo "No changes to be committed"
+        
+        # APY-7 Fix: The if/else shell chain is correctly replacing unstable &&/|| operators.
+        if [ -n "$(git status --porcelain)" ]; then
+          git commit -m "automated price update"
+          git push
+        else
+          echo "No changes to be committed"
+        fi
