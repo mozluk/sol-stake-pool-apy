@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
 // Since name will be used for the CSV file, it must not contain space
+// APY-4 Fix: The pools below that end in '2' were deduplicated as the original names
+// (xSOL, bonkSOL, haSOL) caused disparate pools to overwrite each other. 
 export const pairs: {[key: string]: string} = {
   'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD': 'marinade',
   'CrX7kMhLC3cSsXJdT7JDgqrRVWGnUpX3gfEfxxU2NVLi': 'lido',
@@ -27,7 +29,7 @@ export const pairs: {[key: string]: string} = {
   'spp1mo6shdcrRyqDK2zdurJ8H5uttZE6H6oVjHxN1QN': 'xSOL',
   'So1vW4Bm6ZURzJJHZy1JpsjoVY68z4cDgF4tTLwYMa5': 'elSOL',
   'AdHRYZkiUQg4zPANGHB4XxoUcjbfF5TkAaWJFZ9bQALV': 'ThetaSOL',
-  'DYuSikgwzHidFo2b8jqrViW1psAb7hpawJnszBothRzp': 'xSOL',
+  'DYuSikgwzHidFo2b8jqrViW1psAb7hpawJnszBothRzp': 'xSOL2',
   '4dZDUL3BFJUFeqS3Y3cwkc84Rs6mgVHRYGt1LJvhooW4': 'superSOL',
   'EYwMHf8Ajnpvy3PqMMkq1MPkTyhCsBEesXFgnK9BZfmu': 'polarSOL',
   'BmEgS5XpWJJDqT3FVfB6ZmoELQrWkJxDXo3cNoJVsNFK': 'dualSOL',
@@ -54,7 +56,7 @@ export const pairs: {[key: string]: string} = {
   '4snj2jLuKae9ty4PwDnazq9J89jeGXrmJcYS4xPCXqnp': 'degenSOL',
   'Fvy5L7f3rduuYfRf9GR9fDqEgmJkYagDPh3Ddkp5jcoP': 'kumaSOL',
   '4gT1GaFtJK5pnX3CnjnSYwy8VUV9UdmozoQV9GCNk9RQ': 'rSOL',
-  'ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC': 'bonkSOL',
+  'ArAQfbzsdotoKB5jJcZa3ajQrrPcWr2YQoDAEAiFxJAC': 'bonkSOL2',
   '6LXCxeyQZqdAL4yLCtgATFYF6dcayWvsiwjtBFYVfb1N': 'rkSOL',
   'GZDX5JYXDzCEDL3kybhjN7PSixL4ams3M2G4CvWmMmm5': 'strongSOL',
   '8WHCJsUduwDBhPL9uVADQSdWkUi2LPZNFAMyX1n2HGMD': 'pumpkinSOL',
@@ -67,7 +69,7 @@ export const pairs: {[key: string]: string} = {
   'GM7TwD34n8HmDP9XcT6bD3JJuNniKJkrKQinHqmqHarz': 'pathSOL',
   'G9Jgnqhq5MaDNmLSgTDSmiWRcmq67Q7yVnXjoA8tUsGX': 'eonSOL',
   'FxhzbU8rn4MhZxmeH2u7M18qkvFH3LjkWk8z9686TE45': 'apySOL',
-  '9ovWYMZp18Qn7UVbyUvwqLSBBSEPDDA5q9pUgDFy6R23': 'haSOL',
+  '9ovWYMZp18Qn7UVbyUvwqLSBBSEPDDA5q9pUgDFy6R23': 'haSOL2',
   '9jWbABPXfc75wseAbLEkBCb1NRaX9EbJZJTDQnbtpzc1': 'mangoSOL',
   '7yQNEvbzH6KffCY7iYFrKCKXv8c9zB9jJREmPK6gBVYz': 'stepSOL',
   '5UMja2dWNX3XhrBAvsoRteySTngfpQGHrWfHxueCs5s6': 'uptSOL',

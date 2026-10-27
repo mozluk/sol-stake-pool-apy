@@ -9,6 +9,31 @@ export { pairs } from './known-spl-pools';
 const DATA_SOURCE_BASE =
   'https://raw.githubusercontent.com/glitchful-dev/sol-stake-pool-apy/master/db/';
 
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
+
+/**
+ * APY-1 Fix: Fetches a URL, rejects non-2xx responses, and aborts after a timeout so a
+ * stalled request cannot hang the whole update job.
+ */
+const fetchWithTimeout = async (
+  url: string,
+  timeoutMs: number = DEFAULT_FETCH_TIMEOUT_MS
+) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch ${url}: ${response.status} ${response.statusText}`
+      );
+    }
+    return response;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
 export type PriceRecord = {
   timestamp: number;
   epoch: number;
@@ -54,12 +79,16 @@ export const parsePriceRecordsFromCSV = async (
 
 export const fetchCSVLink = (poolAddress: string): string => {
   const knownName = pairs[poolAddress];
+  // APY-2 Fix: Explicit error instead of fetching undefined.csv
+  if (!knownName) {
+    throw new Error(`Unknown stake pool address: ${poolAddress}`);
+  }
   return `${DATA_SOURCE_BASE}${knownName}.csv`;
 };
 
 export const fetchPricesFromCsv = async (poolAddress: string) => {
   const csvLink = fetchCSVLink(poolAddress);
-  const csvResponse = await fetch(csvLink);
+  const csvResponse = await fetchWithTimeout(csvLink);
   const csvContents = await csvResponse.text();
   const prices = await parsePriceRecordsFromCSV(Readable.from([csvContents]));
 
@@ -67,7 +96,7 @@ export const fetchPricesFromCsv = async (poolAddress: string) => {
 };
 
 export const fetchAndParsePricesCsv = async (url: string) => {
-  const csvResponse = await fetch(url);
+  const csvResponse = await fetchWithTimeout(url);
   const csvContents = await csvResponse.text();
   const prices = await parsePriceRecordsFromCSV(Readable.from([csvContents]));
 
@@ -97,12 +126,13 @@ type PriceRange = {
 }
 
 export const getPriceRange = (priceRecords: PriceRecord[], startTimestamp: number, endTimestamp: number): PriceRange | null => {
-  priceRecords.sort((a, b) => b.timestamp - a.timestamp);
+  // APY-5 Fix: Sort a copy so callers' arrays are not mutated.
+  const sortedRecords = [...priceRecords].sort((a, b) => b.timestamp - a.timestamp);
 
   let earliestRecord: PriceRecord | null = null;
   let latestRecord: PriceRecord | null = null;
 
-  for (const record of priceRecords) {
+  for (const record of sortedRecords) {
     if (record.timestamp >= startTimestamp) {
       earliestRecord = record;
     }
@@ -149,7 +179,9 @@ export const calcYield = (priceRange: PriceRange): Yield => {
 
   const periodYield = priceRange.endPrice / priceRange.startPrice
   const epochsPerPeriod = priceRange.endEpoch - priceRange.startEpoch
-  if (deltaSeconds <= 0) {
+  
+  // APY-3 Fix: Protect against division by zero (epochsPerPeriod <= 0)
+  if (epochsPerPeriod <= 0) {
     throw new Error('At least 1 epoch must be in the range!')
   }
 
